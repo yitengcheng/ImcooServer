@@ -36,6 +36,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use((req, res, next) => {
+    if (req.cookies.userId) {
+        next();
+    } else {
+        if (req.originalUrl === '/users/login' || req.originalUrl === '/users/logout' || req.originalUrl === '/goods') {
+            next();
+        } else {
+            res.json({
+                success: false,
+                msg: '当前未登录'
+            });
+        }
+    }
+});
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/goods', goodsRouter);
