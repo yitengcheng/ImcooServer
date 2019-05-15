@@ -130,4 +130,27 @@ router.post('/cart/del', (req, res, next) => {
     });
 });
 
+// 修改购物车中商品数量
+router.post('/cart/edit', (req, res, next) => {
+    let userId = req.cookies.userId,
+        productId = req.body.productId,
+        productNum = req.body.productNum,
+        checked = req.body.checked;
+    User.update({ userId, 'cartList.productId': productId }, {
+        'cartList.$.productNum': productNum,
+        'cartList.$.checked': checked
+    }, (err, doc) => {
+        if (err) {
+            res.json({
+                success: false,
+                msg: err.message
+            });
+        } else {
+            res.json({
+                success: true
+            });
+        }
+    });
+});
+
 module.exports = router;
