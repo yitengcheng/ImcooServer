@@ -153,4 +153,41 @@ router.post('/cart/edit', (req, res, next) => {
     });
 });
 
+// 购物车全选
+router.post('/cart/editCheckAll', (req, res, next) => {
+    let userId = req.cookies.userId,
+        checkAll = req.body.checkAll;
+    User.findOne({ userId }, (err, user) => {
+        if (err) {
+            res.json({
+                success: false,
+                msg: err.message
+            });
+        } else {
+            if (user) {
+                user.cartList.forEach(item => {
+                    item.checked = checkAll ? 1 : 0;
+                });
+            } else {
+                res.json({
+                    success: false,
+                    msg: '数据错误'
+                });
+            }
+            user.save((err1, doc) => {
+                if (err1) {
+                    res.json({
+                        success: false,
+                        msg: err1.message
+                    });
+                } else {
+                    res.json({
+                        success: true
+                    });
+                }
+            });
+        }
+    });
+});
+
 module.exports = router;
