@@ -190,4 +190,80 @@ router.post('/cart/editCheckAll', (req, res, next) => {
     });
 });
 
+// 查询用户地址列表
+router.post('/addressList', (req, res, next) => {
+    let userId = req.cookies.userId;
+    User.findOne({ userId }, (err, userDoc) => {
+        if (err) {
+            res.json({
+                success: false,
+                msg: err.message
+            });
+        } else {
+            if (userDoc) {
+                res.json({
+                    success: true,
+                    addressList: userDoc.addressList
+                });
+            } else {
+                res.json({
+                    success: false,
+                    msg: '数据错误'
+                });
+            }
+        }
+    });
+});
+
+// 设置默认地址
+router.post('/setDefault', (req, res, next) => {
+    let userId = req.cookies.userId;
+    let addressId = req.body.addressId;
+    // eslint-disable-next-line no-console
+    console.log(addressId);
+    if (!addressId) {
+        res.json({
+            success: false,
+            msg: 'addressId为空'
+        });
+        return;
+    }
+    User.findOne({ userId }, (err, doc) => {
+        if (err) {
+            res.json({
+                success: false,
+                msg: err.message
+            });
+        } else {
+            if (doc) {
+                let addressList = doc.addressList;
+                addressList.forEach(item => {
+                    if (item.addressId === addressId) {
+                        item.isDefault = true;
+                    } else {
+                        item.isDefault = false;
+                    }
+                });
+                doc.save((err1, doc1) => {
+                    if (err1) {
+                        res.json({
+                            success: false,
+                            msg: err1.message
+                        });
+                    } else {
+                        res.json({
+                            success: true,
+                        });
+                    }
+                });
+            } else {
+                res.json({
+                    success: false,
+                    msg: '数据错误'
+                });
+            }
+        }
+    });
+});
+
 module.exports = router;
