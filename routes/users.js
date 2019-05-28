@@ -360,4 +360,34 @@ router.post('/payMent', (req, res, next) => {
     });
 });
 
+//根据订单id查询订单详情
+router.post('/orderDetail', (req, res, next) => {
+    let userId = req.cookies.userId,
+        orderId = req.body.orderId;
+    User.findOne({ userId }, (err, user) => {
+        if (err) {
+            res.json({
+                success: false,
+                msg: err.message
+            });
+        } else {
+            if (user.orderList.length > 0) {
+                user.orderList.forEach(order => {
+                    if (order.orderId === orderId) {
+                        res.json({
+                            success: true,
+                            order,
+                        });
+                    }
+                });
+            } else {
+                res.json({
+                    success: false,
+                    msg: '无此订单'
+                });
+            }
+        }
+    });
+});
+
 module.exports = router;
