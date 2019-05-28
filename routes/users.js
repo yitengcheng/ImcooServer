@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+require('../utils/util.js');
 
 let User = require('../models/user.js');
 
@@ -262,6 +263,99 @@ router.post('/setDefault', (req, res, next) => {
                     msg: '数据错误'
                 });
             }
+        }
+    });
+});
+
+// 删除地址
+router.post('/address/del', (req, res, next) => {
+    let userId = req.cookies.userId, addressId = req.body.addressId;
+    User.update({ userId }, {
+        $pull: {
+            'addressList': {
+                'addressId': addressId
+            }
+        }
+    }, (err, doc) => {
+        if (err) {
+            res.json({
+                success: false,
+                msg: err.message
+            });
+        } else {
+            res.json({
+                success: true
+            });
+        }
+    });
+});
+
+// 生成订单
+router.post('/payMent', (req, res, next) => {
+    let userId = req.cookies.userId,
+        orderTotal = req.body.orderTotal,
+        addressId = req.body.addressId;
+    User.findOne({ userId }, (err, doc) => {
+        if (err) {
+            res.json({
+                success: false,
+                msg: err.message
+            });
+        } else {
+            if (doc) {
+                let address = '',
+                    goodList = [];
+                // 获取当前用户地址信息
+                doc.addressList.forEach(item => {
+                    if (item.addressId === addressId) {
+                        address = item;
+                    }
+                });
+                // 获取用户购物车的购买商品
+                doc.cartList.filter((item) => {
+                    if (item.checked === '1') {
+                        goodList.push(item);
+                    }
+                });
+                let platform = '622';
+                let r1 = Math.floor((Math.random() * 10));
+                let r2 = Math.floor((Math.random() * 10));
+                let sysDate = new Date().Format('yyyyMMddhhmmss');
+                let createDate = new Date().Format('yyyy-MM-dd hh:mm:ss');
+                let orderId = platform + r1 + sysDate + r2;
+
+                let order = {
+                    orderId,
+                    orderTotal,
+                    addressInfo: address,
+                    goodList,
+                    createDate,
+                    orderStatus: '1'
+                };
+                doc.orderList.push(order);
+                doc.save((err1, doc1) => {
+                    if (err1) {
+                        res.json({
+                            success: false,
+                            msg: err.message
+                        });
+                    } else {
+                        res.json({
+                            success: true,
+                            order: {
+                                orderId: order.orderId,
+                                orderTotal: order.orderTotal
+                            }
+                        });
+                    }
+                });
+            } else {
+                res.json({
+                    success: false,
+                    msg: '未知用户'
+                });
+            }
+
         }
     });
 });
