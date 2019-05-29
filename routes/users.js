@@ -390,4 +390,33 @@ router.post('/orderDetail', (req, res, next) => {
     });
 });
 
+// 查询购物车中商品数
+router.post('/getCartListCount', (req, res, next) => {
+    let userId = req.cookies.userId;
+    User.findOne({ userId }, (err, user) => {
+        if (err) {
+            res.json({
+                success: false,
+                msg: err.message
+            });
+        } else {
+            if (user) {
+                let count = 0;
+                user.cartList.forEach(good => {
+                    count += good.productNum;
+                });
+                res.json({
+                    success: true,
+                    count,
+                });
+            } else {
+                res.json({
+                    success: false,
+                    msg: '未知用户'
+                });
+            }
+        }
+    });
+});
+
 module.exports = router;
